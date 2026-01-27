@@ -1,0 +1,47 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  frontend-build:
+    name: Frontend Build Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          # Use example values for build test
+          VITE_CONTRACT_ADDRESS: "0xa00435865d8a71fc68e7dc7724f2f37c6ec1848161ad1e086583b02bf0be5574"
+          VITE_MODULE_NAME: "main"
+          VITE_COLLECTION_ID: "0x202756596fae8e6a97ff20930eb4bfd2658ce0ae926bc6f53a298279a9d3f875"
+          VITE_FULLNODE_URL: "https://testnet.movementnetwork.xyz/v1"
+          VITE_FAUCET_URL: "https://faucet.testnet.movementnetwork.xyz/"
+          VITE_EXPLORER_URL: "https://explorer.movementnetwork.xyz/?network=bardock+testnet"
+
+      - name: Check build output
+        run: |
+          if [ ! -d "frontend/dist" ]; then
+            echo "❌ Build failed - dist folder not found"
+            exit 1
+          fi
+          echo "✅ Build successful"

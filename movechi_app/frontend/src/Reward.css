@@ -1,0 +1,439 @@
+/* Reward.css - Premium Dark/Gold Theme */
+
+:root {
+  --bg-dark: #0d0c0b;
+  --bg-panel: #1a1815;
+  --bg-panel-highlight: linear-gradient(135deg, #1a1815 0%, #25201a 100%);
+  
+  --border: #4a4540;
+  --border-light: rgba(74, 69, 64, 0.5);
+  
+  --accent: #c9a961;
+  --accent-hover: #e0c27b;
+  --accent-glow: rgba(201, 169, 97, 0.4);
+  
+  --text: #e8dcc8;
+  --text-dim: #8a8070;
+  
+  --success: #4caf50;
+  --error: #ff4444;
+  
+  --font-body: 'Inter', sans-serif;
+  --font-display: 'Caveat Brush', cursive;
+}
+
+/* --- PAGE LAYOUT --- */
+.reward-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top center, #1f1c19 0%, #0d0c0b 80%);
+  font-family: var(--font-body);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+.reward-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+/* --- NAVBAR --- */
+.reward-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  border-bottom: 1px solid rgba(74, 69, 64, 0.3);
+  background: rgba(13, 12, 11, 0.8);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-links a:hover, 
+.nav-links a.active {
+  color: var(--accent);
+}
+
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* --- WALLET BUTTONS --- */
+.connect-btn {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.connect-btn:hover {
+  background: rgba(201, 169, 97, 0.1);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.connect-btn.connected {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.wallet-dropdown-container {
+  position: relative;
+}
+
+.wallet-dropdown {
+  position: absolute;
+  top: 130%;
+  right: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 160px;
+  z-index: 200;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.disconnect-btn {
+  width: 100%;
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  padding: 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.disconnect-btn:hover {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+/* --- HEADER SECTION --- */
+.reward-header {
+  text-align: center;
+  margin-bottom: 4rem;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 4.5rem;
+  color: var(--accent);
+  margin: 0;
+  line-height: 1;
+  text-shadow: 0 4px 30px rgba(201, 169, 97, 0.3);
+}
+
+.page-subtitle {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  max-width: 650px;
+  margin: 1rem auto 0;
+  line-height: 1.6;
+}
+
+/* --- GRID LAYOUT --- */
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 2rem;
+  animation: fadeInUp 0.8s ease-out 0.2s backwards;
+}
+
+/* --- CARDS COMMON --- */
+.reward-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reward-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  border-color: var(--border-light);
+}
+
+/* Highlight Card (Pool Stats) */
+.reward-card.highlight {
+  border-color: var(--accent);
+  background: var(--bg-panel-highlight);
+  box-shadow: 0 0 30px rgba(201, 169, 97, 0.05);
+}
+
+.card-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- POOL STATS --- */
+.pool-amount {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.coin-circle {
+  width: 48px;
+  height: 48px;
+  background: var(--accent);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.8rem;
+  font-family: sans-serif;
+  margin-right: 15px;
+  box-shadow: 0 4px 15px rgba(201, 169, 97, 0.4);
+}
+
+.pool-subtext {
+  font-size: 0.9rem;
+  color: var(--accent);
+  margin-top: 0.5rem;
+  margin-bottom: 2.5rem;
+  font-weight: 500;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #fff);
+  border-radius: 5px;
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.season-status-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border-light);
+  padding-top: 1.5rem;
+  margin-top: auto;
+}
+
+.status-active { color: var(--success); font-weight: bold; }
+.status-ended { color: var(--error); font-weight: bold; }
+
+/* --- USER STATS --- */
+.user-stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+}
+
+.user-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-title {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+.stat-num {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #fff;
+  font-family: var(--font-display);
+}
+
+.xp-color {
+  color: var(--accent);
+  text-shadow: 0 0 15px rgba(201, 169, 97, 0.3);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.allocation-section {
+  text-align: right;
+}
+
+.allocation-row span {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.estimated-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #fff;
+  font-family: var(--font-display);
+  margin-top: 0.5rem;
+  background: linear-gradient(180deg, #fff 0%, #aaa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- ACTION CARD (CLAIM) --- */
+.action-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.locked-state, .unlocked-state {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lock-icon, .unlock-icon {
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+}
+
+.claim-deadline {
+  font-size: 0.9rem;
+  color: #c9a961;
+  margin: 0.5rem 0 1rem 0;
+  font-weight: bold;
+  padding: 0.5rem;
+  background: rgba(201, 169, 97, 0.1);
+  border-radius: 4px;
+}
+
+.action-card h3 {
+  color: #fff;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+}
+
+.action-card p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+  max-width: 80%;
+}
+
+/* --- CLAIM BUTTON --- */
+.claim-btn {
+  width: 100%;
+  padding: 1.2rem;
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: auto;
+}
+
+.claim-btn.disabled {
+  background: #2a2520;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Pulse Animation for Active Claim */
+@keyframes pulse-gold {
+  0% { box-shadow: 0 0 0 0 rgba(201, 169, 97, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(201, 169, 97, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 169, 97, 0); }
+}
+
+.claim-btn.active {
+  background: var(--accent);
+  color: #000;
+  font-weight: 800;
+  box-shadow: 0 4px 20px rgba(201, 169, 97, 0.4);
+  animation: pulse-gold 2s infinite;
+}
+
+.claim-btn.active:hover {
+  background: #fff;
+  transform: translateY(-3px);
+  animation: none;
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+}

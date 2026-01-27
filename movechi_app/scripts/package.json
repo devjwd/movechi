@@ -1,0 +1,14 @@
+{
+  "name": "movechi-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend scripts for Movechi leaderboard indexing",
+  "scripts": {
+    "index": "node leaderboard-indexer.js",
+    "index:watch": "node leaderboard-indexer.js --watch",
+    "index:fast": "node leaderboard-indexer.js --watch --interval=10"
+  },
+  "dependencies": {
+    "@aptos-labs/ts-sdk": "^1.29.0"
+  }
+}

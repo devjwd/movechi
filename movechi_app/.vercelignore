@@ -1,0 +1,11 @@
+# Ignore Move contract files
+build/
+sources/
+tests/
+scripts/
+Move.toml
+
+# Ignore everything except frontend
+node_modules/
+.git/
+.github/

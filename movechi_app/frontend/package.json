@@ -1,0 +1,23 @@
+{
+  "name": "movechi-frontend",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@aptos-labs/ts-sdk": "^5.2.0",
+    "@aptos-labs/wallet-adapter-react": "^7.2.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.11.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "terser": "^5.44.1",
+    "vite": "^5.4.10"
+  }
+}
+

@@ -1,0 +1,43 @@
+name: Vercel Preview Deployment
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_CONTRACT_ADDRESS: ${{ secrets.VITE_CONTRACT_ADDRESS }}
+          VITE_MODULE_NAME: main
+          VITE_COLLECTION_ID: ${{ secrets.VITE_COLLECTION_ID }}
+          VITE_FULLNODE_URL: https://testnet.movementnetwork.xyz/v1
+          VITE_FAUCET_URL: https://faucet.testnet.movementnetwork.xyz/
+          VITE_EXPLORER_URL: https://explorer.movementnetwork.xyz/?network=bardock+testnet
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: frontend

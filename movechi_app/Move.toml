@@ -1,0 +1,20 @@
+[package]
+name = "movechi"
+version = "0.0.1"
+
+[dependencies]
+# Aptos framework dependencies from mainnet tag.
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "aptos-node-v1.30.0" }
+AptosStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-stdlib", rev = "aptos-node-v1.30.0" }
+MoveStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/move-stdlib", rev = "aptos-node-v1.30.0" }
+AptosTokenObjects = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-token-objects", rev = "aptos-node-v1.30.0" }
+
+[addresses]
+std = "0x1"
+aptos_std = "0x1"
+aptos_framework = "0x1"
+aptos_token_objects = "0x4"
+
+# Deployed contract address on Movement Testnet
+movechi = "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3"
+movechi_tests = "0x100"

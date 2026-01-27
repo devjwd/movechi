@@ -1,0 +1,21 @@
+﻿* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Caveat Brush', cursive, sans-serif;
+  background: linear-gradient(180deg, #231d18 0%, #161310 100%);
+  min-height: 100vh;
+  color: #e8dcc8;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button, input, select, textarea {
+  font-family: 'Caveat Brush', cursive, sans-serif;
+}
+
