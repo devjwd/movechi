@@ -36,7 +36,7 @@ function TxToast({ txHash, message = "Transaction Confirmed", onClose, duration 
 
   if (!txHash || !isVisible) return null
 
-  const explorerUrl = `https://explorer.movementnetwork.xyz/txn/${txHash}?network=testnet`
+  const explorerUrl = `https://explorer.movementnetwork.xyz/txn/${txHash}?network=mainnet`
   const shortHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`
 
   return (

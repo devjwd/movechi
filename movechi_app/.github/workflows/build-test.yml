@@ -30,13 +30,13 @@ jobs:
         working-directory: frontend
         run: npm run build
         env:
-          # Use example values for build test
-          VITE_CONTRACT_ADDRESS: "0xa00435865d8a71fc68e7dc7724f2f37c6ec1848161ad1e086583b02bf0be5574"
+          # Use mainnet values for build test
+          VITE_CONTRACT_ADDRESS: "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3"
           VITE_MODULE_NAME: "main"
-          VITE_COLLECTION_ID: "0x202756596fae8e6a97ff20930eb4bfd2658ce0ae926bc6f53a298279a9d3f875"
-          VITE_FULLNODE_URL: "https://testnet.movementnetwork.xyz/v1"
-          VITE_FAUCET_URL: "https://faucet.testnet.movementnetwork.xyz/"
-          VITE_EXPLORER_URL: "https://explorer.movementnetwork.xyz/?network=bardock+testnet"
+          VITE_COLLECTION_ID: "0x4c28d9362f440dedec5013742fb21fd4693b56add430e9a5874b220b681053ae"
+          VITE_FULLNODE_URL: "https://mainnet.movementnetwork.xyz/v1"
+          VITE_FAUCET_URL: "https://mainnet.movementnetwork.xyz/v1"
+          VITE_EXPLORER_URL: "https://explorer.movementnetwork.xyz/?network=mainnet"
 
       - name: Check build output
         run: |

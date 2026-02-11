@@ -15,6 +15,6 @@ aptos_std = "0x1"
 aptos_framework = "0x1"
 aptos_token_objects = "0x4"
 
-# Deployed contract address on Movement Testnet
+# Deployed contract address on Movement Mainnet
 movechi = "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3"
 movechi_tests = "0x100"

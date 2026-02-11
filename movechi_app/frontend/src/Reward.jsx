@@ -440,7 +440,7 @@ function Reward() {
             <div className="action-buttons">
               {txHash && (
                 <a 
-                  href={`https://explorer.movementnetwork.xyz/txn/${txHash}?network=bardock+testnet`} 
+                  href={`https://explorer.movementnetwork.xyz/txn/${txHash}?network=mainnet`} 
                   target="_blank" 
                   rel="noreferrer"
                   className="tx-link-btn"

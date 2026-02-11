@@ -30,9 +30,9 @@ jobs:
           VITE_CONTRACT_ADDRESS: ${{ secrets.VITE_CONTRACT_ADDRESS }}
           VITE_MODULE_NAME: main
           VITE_COLLECTION_ID: ${{ secrets.VITE_COLLECTION_ID }}
-          VITE_FULLNODE_URL: https://testnet.movementnetwork.xyz/v1
-          VITE_FAUCET_URL: https://faucet.testnet.movementnetwork.xyz/
-          VITE_EXPLORER_URL: https://explorer.movementnetwork.xyz/?network=bardock+testnet
+          VITE_FULLNODE_URL: https://mainnet.movementnetwork.xyz/v1
+          VITE_FAUCET_URL: https://mainnet.movementnetwork.xyz/v1
+          VITE_EXPLORER_URL: https://explorer.movementnetwork.xyz/?network=mainnet
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25

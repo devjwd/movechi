@@ -8,8 +8,8 @@ import './Staking.css'
 // --- CONFIGURATION ---
 const movementConfig = new AptosConfig({
   network: Network.CUSTOM,
-  fullnode: 'https://testnet.movementnetwork.xyz/v1',
-  indexer: 'https://indexer.testnet.movementnetwork.xyz/v1/graphql', 
+  fullnode: 'https://mainnet.movementnetwork.xyz/v1',
+  indexer: 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql', 
 })
 
 const aptosClient = new Aptos(movementConfig)
