@@ -15,7 +15,7 @@ const movementConfig = new AptosConfig({
 const aptosClient = new Aptos(movementConfig)
 
 // 1. YOUR CONTRACT INFO
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x361bb3204139e0537679d67b03866f8bb9a10d420e39cbf30c22da71b456b10d"
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3"
 const MODULE_NAME = "main" // Assuming your module is named 'main' inside the address above
 
 // 2. YOUR SPECIFIC COLLECTION ID (Mainnet)
@@ -39,6 +39,9 @@ function Staking() {
   // Data
   const [walletNfts, setWalletNfts] = useState([])
   const [stakedNfts, setStakedNfts] = useState([])
+  
+  // NFT Lock Status
+  const [nftLockStatus, setNftLockStatus] = useState({}) // { nftId: { stakedAt: timestamp, unlockTime: timestamp, isLocked: bool } }
   
   // Selection
   const [selectedWalletIds, setSelectedWalletIds] = useState([])
@@ -74,6 +77,30 @@ function Staking() {
     fetchCollectionId()
   }, [])
 
+  // Update lock status countdown every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNftLockStatus(prevStatus => {
+        const nowSeconds = Math.floor(Date.now() / 1000)
+        const updated = {}
+        Object.keys(prevStatus).forEach(nftId => {
+          const status = prevStatus[nftId]
+          const unlockTime = status.unlockTime
+          const isLocked = nowSeconds < unlockTime
+          const remainingSeconds = Math.max(0, unlockTime - nowSeconds)
+          updated[nftId] = {
+            ...status,
+            isLocked,
+            remainingSeconds
+          }
+        })
+        return updated
+      })
+    }, 1000)
+    
+    return () => clearInterval(timer)
+  }, [])
+
   // --- FETCH DATA ---
   const fetchData = useCallback(async () => {
     if (!connected || !account) return
@@ -81,7 +108,21 @@ function Staking() {
     try {
         const userAddr = account.address.toString()
 
-        // 1. Fetch User Profile from Contract (Move Resource)
+        // 1. Fetch GameState to check if season is active
+        const gameStateResourceType = `${CONTRACT_ADDRESS}::${MODULE_NAME}::GameState`
+        let gameStateData = null
+        try {
+            const gameStateResource = await aptosClient.getAccountResource({
+                accountAddress: CONTRACT_ADDRESS,
+                resourceType: gameStateResourceType
+            })
+            gameStateData = gameStateResource?.data || gameStateResource
+            console.log("GameState:", gameStateData)
+        } catch (e) {
+            console.error("Could not fetch GameState:", e)
+        }
+
+        // 2. Fetch User Profile from Contract (Move Resource)
         const resourceType = `${CONTRACT_ADDRESS}::${MODULE_NAME}::UserProfile`
         
         let profileData = null
@@ -101,21 +142,43 @@ function Staking() {
             const stakedAddrs = profileData.staked_nfts || []
             
             // Map staked addresses to display objects
-            // Note: Since these are locked in the contract, we use a placeholder image
-            // unless we fetch metadata individually.
             const stakedObjs = stakedAddrs.map((addr, idx) => ({
                 id: addr,
-                name: `Staked #${idx + 1}`, 
+                name: `Movechi #${idx + 1}`, 
                 uri: 'https://placehold.co/400x400/1a1815/c9a961?text=LOCKED' 
             }))
             setStakedNfts(stakedObjs)
 
+            // Calculate lock status for each staked NFT
+            const nowSeconds = Math.floor(Date.now() / 1000)
+            const lockStatusMap = {}
+            const storedTimestamps = JSON.parse(localStorage.getItem('nft_stake_times') || '{}')
+            
+            stakedAddrs.forEach(addr => {
+                const stakedAt = storedTimestamps[addr] || nowSeconds // Fallback if not stored
+                const unlockTime = stakedAt + 86400 // 24 hours = 86400 seconds
+                const isLocked = nowSeconds < unlockTime
+                const remainingSeconds = Math.max(0, unlockTime - nowSeconds)
+                
+                lockStatusMap[addr] = {
+                    stakedAt,
+                    unlockTime,
+                    isLocked,
+                    remainingSeconds
+                }
+            })
+            setNftLockStatus(lockStatusMap)
+
             // Check Claim Status
             const lastClaim = Number(profileData.last_day_claimed || 0)
-            const nowSeconds = Math.floor(Date.now() / 1000)
             const currentDay = Math.floor(nowSeconds / SECONDS_PER_DAY)
             
-            const canClaim = lastClaim < currentDay && stakedAddrs.length > 0
+            // Check if season is active
+            const seasonStarted = gameStateData?.season_started ?? false
+            const seasonEndTime = Number(gameStateData?.season_end_time ?? 0)
+            const isSeasonActive = seasonStarted && nowSeconds <= seasonEndTime
+            
+            const canClaim = lastClaim < currentDay && stakedAddrs.length > 0 && isSeasonActive
             setIsClaimable(canClaim)
             
             // Calculate Next Claim Time for UI
@@ -224,6 +287,14 @@ function Staking() {
         setTxStatus("Staking...")
         await aptosClient.waitForTransaction({ transactionHash: response.hash })
         
+        // Store staking timestamps in localStorage
+        const nowSeconds = Math.floor(Date.now() / 1000)
+        const storedTimestamps = JSON.parse(localStorage.getItem('nft_stake_times') || '{}')
+        nftAddresses.forEach(addr => {
+            storedTimestamps[addr] = nowSeconds
+        })
+        localStorage.setItem('nft_stake_times', JSON.stringify(storedTimestamps))
+        
         setTxStatus("Staked Successfully! 🛡️")
         setConfirmedTxHash(response.hash)
         setTxToastMessage("NFT Staked Successfully!")
@@ -252,6 +323,19 @@ function Staking() {
 
   const handleUnstake = async () => {
     if (selectedStakedIds.length === 0) return
+    
+    // Check if any selected NFTs are still locked
+    const lockedNFTs = selectedStakedIds.filter(id => nftLockStatus[id]?.isLocked)
+    if (lockedNFTs.length > 0) {
+      const lockedTimers = lockedNFTs.map(id => {
+        const status = nftLockStatus[id]
+        return formatLockTimer(status.remainingSeconds)
+      }).join(', ')
+      setTxStatus(`⚠️ ${lockedNFTs.length} NFT(s) still locked: ${lockedTimers}`)
+      setTimeout(() => setTxStatus(null), 5000)
+      return
+    }
+    
     setLoading(true)
     setTxStatus("Sign in wallet...")
     try {
@@ -271,6 +355,13 @@ function Staking() {
                                 const response = await signAndSubmitTransaction(payload)
         setTxStatus("Unstaking...")
         await aptosClient.waitForTransaction({ transactionHash: response.hash })
+        
+        // Remove timestamps from localStorage
+        const storedTimestamps = JSON.parse(localStorage.getItem('nft_stake_times') || '{}')
+        nftAddresses.forEach(addr => {
+            delete storedTimestamps[addr]
+        })
+        localStorage.setItem('nft_stake_times', JSON.stringify(storedTimestamps))
         
         setTxStatus("Unstaked Successfully! 🔓")
         setConfirmedTxHash(response.hash)
@@ -304,7 +395,9 @@ function Staking() {
                                         functionArguments: [],
                                     }
                                 }
+                                console.log("Claiming XP with payload:", payload)
                                 const response = await signAndSubmitTransaction(payload)
+        console.log("Claim transaction submitted:", response.hash)
         await aptosClient.waitForTransaction({ transactionHash: response.hash })
         setTxStatus(`Claimed ${dailyYield} XP! ⚡`)
         setConfirmedTxHash(response.hash)
@@ -313,18 +406,36 @@ function Staking() {
         setIsClaimable(false)
         setTimeout(fetchData, 1000)
     } catch (e) {
-        const errMsg = e?.toString?.() || ''
-        if (errMsg.includes('104')) setTxStatus("⚠️ Season not active")
-        else if (errMsg.includes('203')) setTxStatus("⚠️ Already claimed today")
-        else setTxStatus("Claim failed")
+        console.error("Claim XP error:", e)
+        const errMsg = e?.message || e?.toString?.() || ''
+        if (errMsg.includes('104') || errMsg.includes('E_SEASON_NOT_ACTIVE')) {
+            setTxStatus("⚠️ Season not started yet")
+        } else if (errMsg.includes('203') || errMsg.includes('E_ALREADY_CLAIMED_TODAY')) {
+            setTxStatus("⚠️ Already claimed today")
+        } else if (errMsg.includes('202') || errMsg.includes('E_NO_STAKED_NFTS')) {
+            setTxStatus("⚠️ No NFTs staked")
+        } else {
+            setTxStatus(`Claim failed: ${errMsg.substring(0, 50)}`)
+        }
     } finally {
-        setTimeout(() => setTxStatus(null), 4000)
+        setTimeout(() => setTxStatus(null), 5000)
         setLoading(false)
     }
   }
 
   // --- HELPERS ---
   const handleDisconnect = async () => { try { await disconnect(); setShowWalletDropdown(false) } catch (e) {} }
+  
+  const formatLockTimer = (remainingSeconds) => {
+    if (remainingSeconds <= 0) return 'Unlocked'
+    const hours = Math.floor(remainingSeconds / 3600)
+    const minutes = Math.floor((remainingSeconds % 3600) / 60)
+    const seconds = remainingSeconds % 60
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`
+    }
+    return `${minutes}m ${seconds}s`
+  }
 
   return (
     <div className="staking-page">
@@ -377,7 +488,7 @@ function Staking() {
                             className={`nft-card ${selectedWalletIds.includes(nft.id) ? 'selected' : ''}`}
                             onClick={() => toggleWalletSelect(nft.id)}
                         >
-                            <img src={nft.uri} alt={nft.name} onError={(e)=>{e.target.src='https://placehold.co/400?text=IMG'}} />
+                            <img src="/unstaked.png" alt={nft.name} />
                             <div className="nft-name">{nft.name}</div>
                             {selectedWalletIds.includes(nft.id) && <div className="check-mark">✓</div>}
                         </div>
@@ -408,18 +519,27 @@ function Staking() {
                 <div className="nft-grid">
                     {!connected && <div className="empty-state">Connect Wallet</div>}
                     {connected && stakedNfts.length === 0 && <div className="empty-state">Vault Empty</div>}
-                    {stakedNfts.map(nft => (
+                    {stakedNfts.map(nft => {
+                        const lockStatus = nftLockStatus[nft.id] || { isLocked: true, remainingSeconds: 0 }
+                        const isLocked = lockStatus.isLocked
+                        const borderClass = isLocked ? 'locked' : 'unlocked'
+                        
+                        return (
                         <div 
                             key={nft.id} 
-                            className={`nft-card ${selectedStakedIds.includes(nft.id) ? 'selected' : ''}`}
+                            className={`nft-card ${borderClass} ${selectedStakedIds.includes(nft.id) ? 'selected' : ''}`}
                             onClick={() => toggleStakedSelect(nft.id)}
                         >
-                            <img src={nft.uri} alt={nft.name} onError={(e)=>{e.target.src='https://placehold.co/400?text=IMG'}} />
+                            <img src="/staked.png" alt={nft.name} />
                             <div className="nft-name">{nft.name}</div>
+                            <div className={`lock-timer ${isLocked ? 'locked-text' : 'unlocked-text'}`}>
+                                {formatLockTimer(lockStatus.remainingSeconds)}
+                            </div>
                             <div className="status-badge">EARNING</div>
                             {selectedStakedIds.includes(nft.id) && <div className="check-mark red">✕</div>}
                         </div>
-                    ))}
+                        )
+                    })}
                 </div>
 
                 <div className="panel-action">

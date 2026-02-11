@@ -7,7 +7,7 @@ import './Reward.css'
 
 // --- CONFIGURATION ---
 const aptosClient = new Aptos(getAptosConfig())
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x361bb3204139e0537679d67b03866f8bb9a10d420e39cbf30c22da71b456b10d" 
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3" 
 const MODULE_NAME = import.meta.env.VITE_MODULE_NAME || "main"
 
 function Reward() {

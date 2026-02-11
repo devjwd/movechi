@@ -12,7 +12,7 @@ import './App.css'
 
 // --- CONFIGURATION ---
 const aptosClient = new Aptos(getAptosConfig())
-const rawContract = import.meta.env.VITE_CONTRACT_ADDRESS || "0x361bb3204139e0537679d67b03866f8bb9a10d420e39cbf30c22da71b456b10d"
+const rawContract = import.meta.env.VITE_CONTRACT_ADDRESS || "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3"
 const CONTRACT_ADDRESS = normalizeAddress(rawContract)
 const MODULE_NAME = import.meta.env.VITE_MODULE_NAME || "main"
 
@@ -825,10 +825,11 @@ function App() {
                   const allowedFree = stakedCount >= 10 ? 3 : (stakedCount >= 5 ? 2 : (stakedCount >= 1 ? 1 : 0))
                   const remainingPaid = Math.max(0, maxPaid - usedPaid)
                   const remainingFree = Math.max(0, allowedFree - usedFree)
-                  const canSpinNow = (remainingPaid > 0 || remainingFree > 0) && !isSpinning && connected
+                  const canSpinNow = (remainingPaid > 0 || remainingFree > 0) && !isSpinning && connected && seasonData.active
+                  const isDisabled = isSpinning || !connected || (remainingPaid === 0 && remainingFree === 0) || !seasonData.active
                   
                   return (
-                    <div className={`wheel-center ${canSpinNow ? 'can-spin' : ''}`} onClick={handleSpin} style={{ cursor: (isSpinning || !connected || (remainingPaid === 0 && remainingFree === 0)) ? 'not-allowed' : 'pointer' }}>
+                    <div className={`wheel-center ${canSpinNow ? 'can-spin' : ''}`} onClick={handleSpin} style={{ cursor: isDisabled ? 'not-allowed' : 'pointer', opacity: !seasonData.active ? 0.5 : 1 }}>
                       <span>{isSpinning ? "..." : (connected ? "SPIN" : "CONNECT")}</span>
                     </div>
                   )

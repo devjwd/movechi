@@ -24,7 +24,7 @@ const __dirname = path.dirname(__filename)
 
 const CONFIG = {
   FULLNODE_URL: process.env.VITE_FULLNODE_URL || "https://mainnet.movementnetwork.xyz/v1",
-  CONTRACT_ADDRESS: process.env.VITE_CONTRACT_ADDRESS || "0xa00435865d8a71fc68e7dc7724f2f37c6ec1848161ad1e086583b02bf0be5574",
+  CONTRACT_ADDRESS: process.env.VITE_CONTRACT_ADDRESS || "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3",
   MODULE_NAME: process.env.VITE_MODULE_NAME || "main",
   CACHE_FILE: path.join(__dirname, '../frontend/public/leaderboard-cache.json'),
   BATCH_SIZE: 10, // Fetch profiles in batches to avoid rate limits

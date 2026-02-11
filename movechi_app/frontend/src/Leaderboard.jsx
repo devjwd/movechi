@@ -22,36 +22,6 @@ function Leaderboard() {
   const [filteredLeaderboard, setFilteredLeaderboard] = useState([])
   const [filterActive, setFilterActive] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [floorPrice, setFloorPrice] = useState(null)
-  const [floorPriceLoading, setFloorPriceLoading] = useState(false)
-
-  // Fetch MOVECHI floor price from Tradeport
-  useEffect(() => {
-    const fetchFloorPrice = async () => {
-      try {
-        setFloorPriceLoading(true)
-        // Fetch collection stats from Tradeport API
-        const response = await fetch(
-          'https://api.tradeport.xyz/collections/0x4c28d9362f440dedec5013742fb21fd4693b56add430e9a5874b220b681053ae/stats'
-        )
-        if (response.ok) {
-          const data = await response.json()
-          if (data.floor_price) {
-            setFloorPrice(data.floor_price)
-          }
-        }
-      } catch (error) {
-        console.log('Could not fetch floor price:', error.message)
-      } finally {
-        setFloorPriceLoading(false)
-      }
-    }
-
-    fetchFloorPrice()
-    // Refresh floor price every 60 seconds
-    const interval = setInterval(fetchFloorPrice, 60000)
-    return () => clearInterval(interval)
-  }, [])
 
   // Apply filters
   useEffect(() => {
@@ -114,12 +84,6 @@ function Leaderboard() {
               {countdown.days === 0 && countdown.hours === 0 && countdown.minutes === 0 
                 ? 'Not Started' 
                 : `${countdown.days}d ${countdown.hours}h ${countdown.minutes}m`}
-            </span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">MOVECHI FLOOR PRICE</span>
-            <span className="stat-value">
-              {floorPriceLoading ? 'Loading...' : floorPrice ? `${floorPrice.toFixed(2)} MOVE` : 'N/A'}
             </span>
           </div>
           <div className="stat-card">
