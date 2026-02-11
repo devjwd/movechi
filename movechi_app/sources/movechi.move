@@ -130,7 +130,7 @@ module movechi::main {
         coin::register<AptosCoin>(&r_s);
         coin::register<AptosCoin>(admin);
 
-        let default_col = @0x202756596fae8e6a97ff20930eb4bfd2658ce0ae926bc6f53a298279a9d3f875;
+        let default_col = @0x4c28d9362f440dedec5013742fb21fd4693b56add430e9a5874b220b681053ae;
 
         move_to(admin, GameState {
             admin: signer::address_of(admin),
@@ -269,6 +269,19 @@ module movechi::main {
         let vault_signer = account::create_signer_with_capability(&game.instant_cap);
         assert!(object::is_owner(nft_object, signer::address_of(&vault_signer)), E_NOT_OWNER);
         object::transfer(&vault_signer, nft_object, recipient);
+    }
+
+    // --- NEW: GRANT ADMIN FUNCTION ---
+    public entry fun grant_admin(existing_admin: &signer, new_admin: &signer) {
+        assert!(exists<AdminCap>(signer::address_of(existing_admin)), E_NOT_ADMIN);
+        move_to(new_admin, AdminCap {});
+    }
+
+    // --- NEW: UPDATE NFT COLLECTION FUNCTION ---
+    public entry fun set_whitelist_collection(admin: &signer, new_col: address) acquires GameState {
+        assert!(exists<AdminCap>(signer::address_of(admin)), E_NOT_ADMIN);
+        let game = borrow_global_mut<GameState>(@movechi);
+        game.whitelist_collection = new_col;
     }
 
     // ==========================================

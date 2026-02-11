@@ -21,10 +21,10 @@ import { Aptos } from "@aptos-labs/ts-sdk"
 
 function normalizeAddr(a) {
   if (!a) return ''
-  const s = a.toString()
-  if (!s.startsWith('0x')) return s.toLowerCase()
-  const hex = s.slice(2).replace(/^0+/, '')
-  return `0x${hex.toLowerCase()}`
+  const s = a.toString().toLowerCase()
+  // Ensure address starts with 0x
+  if (!s.startsWith('0x')) return `0x${s}`
+  return s
 }
 
 function formatAddr(addr) {
@@ -365,27 +365,31 @@ export class LeaderboardIndexer {
   }
 
   /**
-   * Fetch all player addresses from on-chain using get_all_players view function
+   * Fetch all player addresses from on-chain
+   * Reads active_players directly from GameState resource (most reliable method)
    */
   async fetchAllPlayerAddresses() {
     try {
-      const payload = {
-        function: `${this.contractAddr}::${this.moduleName}::get_all_players`,
-        type_arguments: [],
-        arguments: []
+      const resourceType = `${this.contractAddr}::${this.moduleName}::GameState`
+      console.log('📡 Fetching GameState from:', this.contractAddr)
+      
+      const resource = await this.aptosClient.getAccountResource({
+        accountAddress: this.contractAddr,
+        resourceType
+      })
+
+      const data = resource?.data || resource
+      const activePlayers = data.active_players || []
+      
+      if (activePlayers.length > 0) {
+        console.log(`✅ Fetched ${activePlayers.length} players from GameState.active_players`)
+        return activePlayers.map(addr => normalizeAddr(addr))
       }
       
-      const result = await this.aptosClient.view({ payload })
-      
-      if (result && result[0]) {
-        const addresses = result[0]
-        console.log(`Fetched ${addresses.length} players from contract`)
-        return addresses.map(addr => normalizeAddr(addr))
-      }
-      
+      console.warn('⚠️ GameState.active_players is empty')
       return []
     } catch (error) {
-      console.warn('Failed to fetch all players from contract:', error.message)
+      console.error('❌ Failed to fetch active_players from GameState:', error.message)
       return []
     }
   }
@@ -420,20 +424,27 @@ export class LeaderboardIndexer {
    */
   async fetchLeaderboard(testAddresses = []) {
     try {
+      console.log('🔍 LeaderboardIndexer.fetchLeaderboard called')
       const gameState = await this.gameStateCache.fetch()
+      console.log('📊 GameState fetched:', {
+        seasonId: gameState.seasonId,
+        totalGlobalXP: gameState.totalGlobalXP?.toString(),
+      })
 
       // Try to fetch all players from contract first
       let addresses = await this.fetchAllPlayerAddresses()
+      console.log('👥 Player addresses fetched:', addresses.length)
       
       // Fallback to test addresses if contract query fails
       if (addresses.length === 0 && testAddresses.length > 0) {
-        console.log('Using test addresses as fallback')
+        console.log('⚠️ Using test addresses as fallback')
         addresses = testAddresses
       }
       
       // Final fallback to known addresses
       if (addresses.length === 0) {
         addresses = Array.from(this.knownAddresses)
+        console.log('⚠️ Using known addresses fallback:', addresses.length)
       }
 
       if (addresses.length === 0) {
@@ -441,6 +452,7 @@ export class LeaderboardIndexer {
         return []
       }
 
+      console.log('🔄 Fetching profiles for', addresses.length, 'players...')
       return await this.fetchLeaderboardForAddresses(addresses, gameState)
     } catch (error) {
       console.error('LeaderboardIndexer.fetchLeaderboard error:', error)

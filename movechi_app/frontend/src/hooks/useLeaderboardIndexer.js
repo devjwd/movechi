@@ -3,6 +3,7 @@
  * 
  * React hook for leaderboard state management using LeaderboardIndexer service.
  * Handles data fetching, caching, countdown timer, and real-time updates.
+ * Updated: Feb 3, 2026
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -12,10 +13,9 @@ import { LeaderboardIndexer } from '../services/leaderboardIndexer'
 
 const normalizeAddr = (a) => {
   if (!a) return ''
-  const s = a.toString()
-  if (!s.startsWith('0x')) return s.toLowerCase()
-  const hex = s.slice(2).replace(/^0+/, '')
-  return `0x${hex.toLowerCase()}`
+  const s = a.toString().toLowerCase()
+  if (!s.startsWith('0x')) return `0x${s}`
+  return s
 }
 
 export function useLeaderboardIndexer(testAddresses = []) {
@@ -100,30 +100,38 @@ export function useLeaderboardIndexer(testAddresses = []) {
 
   // Fetch leaderboard data (from chain)
   const fetchLeaderboard = useCallback(async (skipCache = false) => {
-    if (!indexerRef.current) return
+    if (!indexerRef.current) {
+      console.warn('Indexer not initialized yet')
+      return
+    }
 
     try {
       setLoading(true)
       setError(null)
       setUsingCache(false)
 
+      console.log('🔄 Fetching leaderboard from blockchain...')
+
       // Fetch leaderboard
       const leaderboardData = await indexerRef.current.fetchLeaderboard(testAddresses)
+      console.log('📊 Leaderboard data received:', leaderboardData?.length || 0, 'players')
       setLeaderboard(leaderboardData)
 
       // Fetch game state (for season info, countdown)
       const gameStateData = await indexerRef.current.gameStateCache.fetch()
+      console.log('🎮 Game state:', gameStateData)
       setGameState(gameStateData)
 
       // Get global stats
       const globalStatsData = indexerRef.current.getGlobalStats()
+      console.log('📈 Global stats:', globalStatsData)
       setGlobalStats(globalStatsData)
 
       // Sort leaderboard
       const sorted = indexerRef.current.getLeaderboard(sortBy, 100)
       setLeaderboard(sorted)
       
-      console.log('✅ Fetched fresh data from blockchain')
+      console.log('✅ Fetched fresh data from blockchain, players:', sorted?.length || 0)
     } catch (err) {
       console.error('useLeaderboardIndexer: fetchLeaderboard error:', err)
       setError(err.message || 'Failed to fetch leaderboard')
@@ -134,29 +142,46 @@ export function useLeaderboardIndexer(testAddresses = []) {
 
   // Initial load: try cache first, then fetch from chain
   useEffect(() => {
-    const initialLoad = async () => {
-      // Try loading from cache first for instant display
-      const cachedData = await loadCachedData()
-      
-      if (!cachedData) {
-        // No cache or cache is stale, fetch from chain
-        await fetchLeaderboard()
-      } else {
-        // Cache loaded successfully, refresh from chain in background
-        setTimeout(() => {
-          fetchLeaderboard()
-        }, 2000) // Refresh after 2 seconds
+    let mounted = true
+    
+    // Wait a bit for indexer to initialize
+    const timer = setTimeout(async () => {
+      if (!mounted) return
+      if (!indexerRef.current) {
+        console.warn('Indexer not ready, retrying...')
+        // Try again in 500ms
+        setTimeout(async () => {
+          if (!mounted || !indexerRef.current) return
+          await fetchLeaderboard()
+        }, 500)
+        return
       }
-    }
+      
+      console.log('🚀 Starting initial leaderboard load...')
+      
+      // Go directly to blockchain (skip cache for now to debug)
+      await fetchLeaderboard()
+    }, 300) // Small delay to ensure indexer is initialized
 
-    initialLoad()
-  }, []) // Run only once on mount
+    return () => {
+      mounted = false
+      clearTimeout(timer)
+    }
+  }, []) // Run once on mount - fetchLeaderboard is stable via useCallback
 
   // Countdown timer
   useEffect(() => {
     const updateCountdown = () => {
       const now = Math.floor(Date.now() / 1000)
-      const secondsLeft = Math.max(0, gameState.seasonEndTime - now)
+      const endTime = gameState.seasonEndTime || 0
+      
+      // Handle case when season hasn't started or endTime is 0
+      if (!endTime || endTime <= now) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+        return
+      }
+      
+      const secondsLeft = Math.max(0, endTime - now)
 
       const days = Math.floor(secondsLeft / 86400)
       const hours = Math.floor((secondsLeft % 86400) / 3600)

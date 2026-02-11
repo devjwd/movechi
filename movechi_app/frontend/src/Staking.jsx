@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useWallet } from "@aptos-labs/wallet-adapter-react"
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk"
 import Header from './components/Header'
+import TxToast from './components/TxToast'
 import './Staking.css'
 
 // --- CONFIGURATION ---
@@ -17,8 +18,8 @@ const aptosClient = new Aptos(movementConfig)
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x361bb3204139e0537679d67b03866f8bb9a10d420e39cbf30c22da71b456b10d"
 const MODULE_NAME = "main" // Assuming your module is named 'main' inside the address above
 
-// 2. YOUR SPECIFIC COLLECTION ID
-const COLLECTION_ID = import.meta.env.VITE_COLLECTION_ID || "0x202756596fae8e6a97ff20930eb4bfd2658ce0ae926bc6f53a298279a9d3f875"
+// 2. YOUR SPECIFIC COLLECTION ID (Mainnet)
+const DEFAULT_COLLECTION_ID = import.meta.env.VITE_COLLECTION_ID || "0x4c28d9362f440dedec5013742fb21fd4693b56add430e9a5874b220b681053ae"
 
 const SECONDS_PER_DAY = 86400;
 
@@ -29,6 +30,11 @@ function Staking() {
   // --- STATE ---
   const [loading, setLoading] = useState(false)
   const [txStatus, setTxStatus] = useState(null)
+  const [collectionId, setCollectionId] = useState(DEFAULT_COLLECTION_ID)
+  
+  // Transaction Toast
+  const [confirmedTxHash, setConfirmedTxHash] = useState(null)
+  const [txToastMessage, setTxToastMessage] = useState('')
   
   // Data
   const [walletNfts, setWalletNfts] = useState([])
@@ -42,6 +48,31 @@ function Staking() {
   const [dailyYield, setDailyYield] = useState(0)
   const [isClaimable, setIsClaimable] = useState(false)
   const [nextClaimTime, setNextClaimTime] = useState(null)
+
+  // --- FETCH COLLECTION ID FROM CONTRACT ---
+  const fetchCollectionId = useCallback(async () => {
+    try {
+      const resourceType = `${CONTRACT_ADDRESS}::main::GameState`
+      const resource = await aptosClient.getAccountResource({
+        accountAddress: CONTRACT_ADDRESS,
+        resourceType: resourceType
+      })
+      const gameState = resource?.data?.data || resource?.data || resource
+      if (gameState?.whitelist_collection) {
+        const collAddr = gameState.whitelist_collection
+        const normalized = collAddr.startsWith('0x') ? collAddr.toLowerCase() : `0x${collAddr.toLowerCase()}`
+        setCollectionId(normalized)
+        console.log("Collection ID from contract:", normalized)
+      }
+    } catch (e) {
+      console.warn("Could not fetch collection ID from contract, using default:", e)
+      setCollectionId(DEFAULT_COLLECTION_ID)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchCollectionId()
+  }, [])
 
   // --- FETCH DATA ---
   const fetchData = useCallback(async () => {
@@ -114,7 +145,10 @@ function Staking() {
         // Filter STRICTLY by your Collection ID
         const myCollectionTokens = ownedTokens.filter(token => {
             // Handle both v1 and v2 token standards if necessary, usually current_token_data.collection_id
-            return token.current_token_data?.collection_id === COLLECTION_ID
+            const tokenCollId = token.current_token_data?.collection_id
+            const normalizedTokenCollId = tokenCollId ? (tokenCollId.startsWith('0x') ? tokenCollId.toLowerCase() : `0x${tokenCollId.toLowerCase()}`) : null
+            const normalizedCollId = collectionId.startsWith('0x') ? collectionId.toLowerCase() : `0x${collectionId.toLowerCase()}`
+            return normalizedTokenCollId === normalizedCollId
         }).map(token => {
             // For Aptos Digital Assets (Token Objects), we need the storage_id which is the object address
             const objectAddress = token.storage_id || token.token_data_id;
@@ -132,7 +166,7 @@ function Staking() {
     } catch (e) {
         console.error("Fetch error", e)
     }
-  }, [connected, account])
+  }, [connected, account, collectionId])
 
   useEffect(() => {
     fetchData()
@@ -191,6 +225,8 @@ function Staking() {
         await aptosClient.waitForTransaction({ transactionHash: response.hash })
         
         setTxStatus("Staked Successfully! 🛡️")
+        setConfirmedTxHash(response.hash)
+        setTxToastMessage("NFT Staked Successfully!")
         setSelectedWalletIds([])
         // Small delay to allow indexer/chain to update
         setTimeout(fetchData, 1000)
@@ -237,6 +273,8 @@ function Staking() {
         await aptosClient.waitForTransaction({ transactionHash: response.hash })
         
         setTxStatus("Unstaked Successfully! 🔓")
+        setConfirmedTxHash(response.hash)
+        setTxToastMessage("NFT Unstaked Successfully!")
         setSelectedStakedIds([])
         setTimeout(fetchData, 1000)
     } catch (e) {
@@ -269,6 +307,8 @@ function Staking() {
                                 const response = await signAndSubmitTransaction(payload)
         await aptosClient.waitForTransaction({ transactionHash: response.hash })
         setTxStatus(`Claimed ${dailyYield} XP! ⚡`)
+        setConfirmedTxHash(response.hash)
+        setTxToastMessage(`Claimed ${dailyYield} XP!`)
         
         setIsClaimable(false)
         setTimeout(fetchData, 1000)
@@ -317,7 +357,7 @@ function Staking() {
             </div>
         </div>
 
-        {txStatus && <div className="tx-toast">{txStatus}</div>}
+        {txStatus && <div className="staking-status-msg">{txStatus}</div>}
 
         <div className="staking-split-view">
             
@@ -395,6 +435,16 @@ function Staking() {
 
         </div>
       </div>
+      
+      {/* Transaction Toast */}
+      {confirmedTxHash && (
+        <TxToast 
+          txHash={confirmedTxHash}
+          message={txToastMessage}
+          onClose={() => setConfirmedTxHash(null)}
+          duration={8000}
+        />
+      )}
     </div>
   )
 }

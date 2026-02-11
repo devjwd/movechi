@@ -111,7 +111,9 @@ function Leaderboard() {
           <div className="stat-card">
             <span className="stat-label">ENDS IN</span>
             <span className="stat-value">
-              {countdown.days}d {countdown.hours}h {countdown.minutes}m
+              {countdown.days === 0 && countdown.hours === 0 && countdown.minutes === 0 
+                ? 'Not Started' 
+                : `${countdown.days}d ${countdown.hours}h ${countdown.minutes}m`}
             </span>
           </div>
           <div className="stat-card">
@@ -122,7 +124,7 @@ function Leaderboard() {
           </div>
           <div className="stat-card">
             <span className="stat-label">TOTAL PLAYERS</span>
-            <span className="stat-value">{globalStats?.totalPlayers || 0}</span>
+            <span className="stat-value">{globalStats?.totalPlayers || leaderboard.length || 0}</span>
           </div>
         </div>
 
@@ -153,10 +155,13 @@ function Leaderboard() {
 
         {/* Leaderboard Table */}
         {loading ? (
-          <div className="leaderboard-loading">leaderboard Loading....</div>
+          <div className="leaderboard-loading">Loading leaderboard...</div>
         ) : filteredLeaderboard.length === 0 ? (
           <div className="leaderboard-empty">
             <p>No players found yet. Be the first to spin and get on the leaderboard!</p>
+            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '1rem' }}>
+              Debug: Raw leaderboard has {leaderboard.length} players
+            </p>
             <Link to="/spin" className="refresh-btn">Start Playing</Link>
           </div>
         ) : (

@@ -20,6 +20,7 @@ const Leaderboard = lazy(() => import('./Leaderboard.jsx'))
 const Art = lazy(() => import('./Art.jsx'))
 const FAQ = lazy(() => import('./FAQ.jsx'))
 const About = lazy(() => import('./About.jsx'))
+const Terms = lazy(() => import('./Terms.jsx'))
 const NotFound = lazy(() => import('./NotFound.jsx'))
 
 const config = getDappConfig()
@@ -39,6 +40,7 @@ function AppRouter() {
           <Route path="/art" element={<Art />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

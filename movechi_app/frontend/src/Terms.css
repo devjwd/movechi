@@ -1,0 +1,300 @@
+/* ============================================
+   MOVECHI TERMS AND CONDITIONS PAGE
+   Dark/Gold Theme Aesthetic
+   ============================================ */
+
+:root {
+  --bg-dark: #0d0c0b;
+  --bg-panel: #1a1815;
+  --border: #4a4540;
+  --accent: #c9a961;
+  --text: #e8dcc8;
+  --text-dim: #8a8070;
+}
+
+.terms-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top center, #1a1815 0%, #0d0c0b 100%);
+  padding: 3rem 2rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+}
+
+.terms-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.terms-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 1.5px solid rgba(201, 169, 97, 0.4);
+  border-radius: 8px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.terms-back-btn:hover {
+  background: rgba(201, 169, 97, 0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateX(-4px);
+}
+
+.terms-content {
+  background: linear-gradient(135deg, #1a1815 0%, #252118 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.terms-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 2rem 0;
+  letter-spacing: -0.5px;
+  font-family: 'Caveat Brush', cursive;
+  text-align: center;
+  text-shadow: 0 0 20px rgba(201, 169, 97, 0.3);
+}
+
+.terms-section {
+  margin-bottom: 2.5rem;
+}
+
+.terms-section h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.3px;
+  font-family: 'Caveat Brush', cursive;
+}
+
+.terms-section p {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: rgba(232, 220, 200, 0.8);
+  margin: 0 0 1rem 0;
+}
+
+.terms-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.terms-section li {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: rgba(232, 220, 200, 0.8);
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.terms-section li:before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.terms-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.terms-footer p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 1024px) {
+  .terms-page {
+    padding: 2rem 1.5rem;
+  }
+
+  .terms-container {
+    max-width: 900px;
+  }
+
+  .terms-content {
+    padding: 2.5rem 2rem;
+  }
+
+  .terms-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .terms-page {
+    padding: 1.5rem 1rem;
+  }
+
+  .terms-container {
+    max-width: 100%;
+  }
+
+  .terms-content {
+    padding: 1.75rem 1.25rem;
+    border-radius: 14px;
+  }
+
+  .terms-title {
+    font-size: 1.9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .terms-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .terms-section h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .terms-section p,
+  .terms-section li {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .terms-back-btn {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .terms-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .terms-container {
+    max-width: 100%;
+  }
+
+  .terms-content {
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+  }
+
+  .terms-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+  }
+
+  .terms-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .terms-section h2 {
+    font-size: 1.05rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .terms-section p,
+  .terms-section li {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  .terms-back-btn {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .terms-section ul,
+  .terms-section ol {
+    padding-left: 1.25rem;
+    gap: 0.5rem;
+  }
+
+  .terms-section li {
+    margin-bottom: 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-page {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .terms-content {
+    padding: 1rem 0.75rem;
+    border-radius: 10px;
+  }
+
+  .terms-title {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .terms-section {
+    margin-bottom: 1rem;
+  }
+
+  .terms-section h2 {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .terms-section p,
+  .terms-section li {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .terms-back-btn {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .terms-section ul,
+  .terms-section ol {
+    padding-left: 1.1rem;
+  }
+
+  .terms-section li {
+    margin-bottom: 0.3rem;
+  }
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.terms-content {
+  animation: fadeIn 0.6s ease forwards;
+}

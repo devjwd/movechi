@@ -5,7 +5,9 @@ import { getAptosConfig } from './config/network'
 import { normalizeAddress } from './utils/addressUtils'
 import { logger } from './utils/logger'
 import { GAME_CONFIG } from './constants/gameConfig'
+import { generateTwitterShareUrl } from './utils/shareUtils'
 import Header from './components/Header'
+import TxToast from './components/TxToast'
 import './App.css'
 
 // --- CONFIGURATION ---
@@ -53,6 +55,9 @@ function App() {
   // Messages
   const [txStatus, setTxStatus] = useState(null)
   const [winMessage, setWinMessage] = useState(null) // "Honest work" etc.
+  
+  // Transaction Toast
+  const [confirmedTxHash, setConfirmedTxHash] = useState(null)
 
     const [seasonData, setSeasonData] = useState({
       active: true,
@@ -496,6 +501,9 @@ function App() {
         
         spinWheelToResult(finalRewardType, finalAmount, rollResult, wasFree)
         
+        // Show transaction toast
+        setConfirmedTxHash(hash)
+        
         // Force immediate refresh of on-chain state after transaction confirmation
         setTxStatus('Syncing state...')
         await Promise.all([
@@ -778,18 +786,27 @@ function App() {
                   {prizes.map((prize, index) => {
                     const segmentAngle = 360 / prizes.length
                     const angle = (index * segmentAngle) + (segmentAngle / 2)
-                    const radius = 110 
-                    const center = 180 
-                    const x = center + radius * Math.cos((angle - 90) * Math.PI / 180) - 20
-                    const y = center + radius * Math.sin((angle - 90) * Math.PI / 180) - 20
+                    // Use percentage-based positioning for responsiveness
+                    const radiusPercent = 30 // 30% from center
+                    const xPercent = 50 + radiusPercent * Math.cos((angle - 90) * Math.PI / 180)
+                    const yPercent = 50 + radiusPercent * Math.sin((angle - 90) * Math.PI / 180)
                     
                     return (
                       <div key={index} className="segment-icon" style={{
-                          position: 'absolute', left: `${x}px`, top: `${y}px`,
-                          transform: prize.type === 'text' ? 'none' : `rotate(${angle}deg)`,
-                          width: '40px', height: '40px', display: 'flex', alignItems: 'center',
-                          justifyContent: 'center', fontSize: prize.type === 'text' ? '1.5rem' : '2rem',
-                          color: '#fff', fontWeight: 'bold', zIndex: 5, textAlign: 'center',
+                          position: 'absolute', 
+                          left: `${xPercent}%`, 
+                          top: `${yPercent}%`,
+                          transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+                          width: '11%', 
+                          height: '11%', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          justifyContent: 'center', 
+                          fontSize: prize.type === 'text' ? '1.5rem' : '2rem',
+                          color: '#fff', 
+                          fontWeight: 'bold', 
+                          zIndex: 5, 
+                          textAlign: 'center',
                           textShadow: '0 2px 4px rgba(0,0,0,0.5)'
                         }}
                       >
@@ -846,13 +863,21 @@ function App() {
             </div>
             <h2>JACKPOT!</h2>
             <p className="win-amount">{result.displayAmount}</p>
+            {/* Win Card Preview Section */}
+            <div className="win-card-preview-section">
+              <p className="win-card-label">Share Your Win With A Card:</p>
+              <div className="win-card-preview">
+                <img src={generateTwitterShareUrl(result.displayAmount).selectedCard} alt="Win Card" className="win-card-image" />
+              </div>
+              <p className="win-card-hint">A random win card will be attached to your share!</p>
+            </div>
             <div className="result-actions">
               {(() => {
-                const shareOrigin = (typeof window !== 'undefined' && window.location.origin) ? window.location.origin : 'https://movechi.app'
-                const shareText = `I just hit the Movechi jackpot for ${result.displayAmount} on Movechi!`
-                const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareOrigin)}`
+                const shareData = generateTwitterShareUrl(result.displayAmount)
                 return (
-                  <a className="share-btn" href={shareUrl} target="_blank" rel="noreferrer">Share on X</a>
+                  <a className="share-btn" href={shareData.url} target="_blank" rel="noreferrer" title={`Share your ${result.displayAmount} jackpot win with a random win card!`}>
+                    Share on X
+                  </a>
                 )
               })()}
               <button className="modal-primary-btn" onClick={() => setResult(null)}>Back</button>
@@ -896,6 +921,16 @@ function App() {
              </div>
           </div>
         </div>
+      )}
+      
+      {/* Transaction Toast */}
+      {confirmedTxHash && (
+        <TxToast 
+          txHash={confirmedTxHash}
+          message="Spin Confirmed!"
+          onClose={() => setConfirmedTxHash(null)}
+          duration={8000}
+        />
       )}
     </div>
   )

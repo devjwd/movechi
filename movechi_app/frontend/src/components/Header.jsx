@@ -212,11 +212,6 @@ function Header({ activePage = 'spin' }) {
                     <span className="wallet-label">Connected Wallet</span>
                     <span className="wallet-address-full">{formatAddress(account?.address)}</span>
                  </div>
-                 <div className="effects-row">
-                    <button className={`effects-toggle ${effectsEnabled ? 'on' : 'off'}`} onClick={() => setEffectsEnabled(v => !v)}>
-                      Effects: {effectsEnabled ? 'On' : 'Off'}
-                    </button>
-                 </div>
                  <button className="disconnect-btn" onClick={handleDisconnect}>Disconnect</button>
               </div>
             )}
@@ -251,6 +246,12 @@ function Header({ activePage = 'spin' }) {
                     </button>
                   ))
               ) : ( <div className="no-wallets"><p>No wallets detected. Install Razor, Nightly, or OKX wallet.</p></div> )}
+            </div>
+            <div className="wallet-modal-footer">
+              <p className="terms-note">
+                By connecting wallet you are agreeing to{' '}
+                <a href="/terms" className="terms-link">Terms and Conditions</a>
+              </p>
             </div>
           </div>
         </div>

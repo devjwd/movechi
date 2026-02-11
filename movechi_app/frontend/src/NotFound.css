@@ -180,21 +180,66 @@
 }
 
 /* RESPONSIVE */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .notfound-number {
-    font-size: 5rem;
+    font-size: 7rem;
   }
 
   .notfound-title {
-    font-size: 2rem;
-  }
-
-  .notfound-message {
-    font-size: 1rem;
+    font-size: 2.2rem;
   }
 
   .suggestion-buttons {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .notfound-number {
+    font-size: 5.5rem;
+  }
+
+  .notfound-title {
+    font-size: 1.9rem;
+  }
+
+  .notfound-message {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .suggestion-buttons {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .suggestion-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .notfound-number {
+    font-size: 4.5rem;
+  }
+
+  .notfound-title {
+    font-size: 1.6rem;
+  }
+
+  .notfound-message {
+    font-size: 0.95rem;
+  }
+
+  .suggestion-buttons {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .suggestion-btn {
+    padding: 0.7rem 1.1rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -204,15 +249,16 @@
   }
 
   .notfound-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .notfound-message {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 
   .suggestion-buttons {
     grid-template-columns: 1fr;
+    gap: 0.6rem;
   }
 
   .suggestion-btn {

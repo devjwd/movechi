@@ -3,16 +3,10 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react"
 import { Aptos } from "@aptos-labs/ts-sdk"
 import { getAptosConfig } from './config/network' // Ensure you have this or standard config
 import { Link } from 'react-router-dom'
+import { downloadLeaderboardCSV, downloadLeaderboardJSON, downloadLeaderboardTSV } from './utils/leaderboardDownload'
+import { useLeaderboardIndexer } from './hooks/useLeaderboardIndexer'
 import './Admin.css'
 import './upload-styles.css'
-
-// --- CONSTANTS ---
-const OCTAS_PER_APT = 100_000_000
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x361bb3204139e0537679d67b03866f8bb9a10d420e39cbf30c22da71b456b10d"
-const MODULE_NAME = import.meta.env.VITE_MODULE_NAME || "main"
-
-// Initialize Client
-const aptosClient = new Aptos(getAptosConfig())
 
 // --- HELPERS (module scope so subcomponents can use them) ---
 const normalizeAddress = (addr) => addr ? addr.toString().toLowerCase().replace(/^0x/, '') : ''
@@ -24,13 +18,27 @@ const formatAddress = (addr) => {
     return `0x${hex.slice(0,4)}...${hex.slice(-4)}`
 }
 
+// --- CONSTANTS ---
+const OCTAS_PER_APT = 100_000_000
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x361bb3204139e0537679d67b03866f8bb9a10d420e39cbf30c22da71b456b10d"
+const MODULE_NAME = import.meta.env.VITE_MODULE_NAME || "main"
+const ADMIN_ADDRESSES = [
+  '0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3'
+].map(addr => normalizeAddress(addr))
+
+// Initialize Client
+const aptosClient = new Aptos(getAptosConfig())
+
 function Admin() {
   const { connected, account, signAndSubmitTransaction, disconnect, connect, wallets } = useWallet()
+  const { leaderboard, gameState: leaderboardGameState } = useLeaderboardIndexer()
   
   // UI State
   const [loading, setLoading] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [showWalletModal, setShowWalletModal] = useState(false)
+  const [downloadLoading, setDownloadLoading] = useState(false)
+  const [downloadFormat, setDownloadFormat] = useState('csv')
   
   // Game State (Matches Move Structs)
   const [gameState, setGameState] = useState({
@@ -137,11 +145,14 @@ function Admin() {
   const isSeasonActive = gameState.seasonStarted && now <= gameState.seasonEndTime
   const isClaimActive = gameState.claimWindowActive && now <= gameState.claimEndTime
   
-  // Security Check
+  // Security Check - Check if user is an authorized admin
   const isAdmin = useMemo(() => {
-    if (!account || !gameState.admin) return false
-    return normalizeAddress(account.address) === normalizeAddress(gameState.admin) || 
-           normalizeAddress(account.address) === normalizeAddress(CONTRACT_ADDRESS)
+    if (!account) return false
+    const userAddr = normalizeAddress(account.address)
+    // Check against game state admin or hardcoded admin addresses
+    return (gameState.admin && normalizeAddress(gameState.admin) === userAddr) || 
+           normalizeAddress(CONTRACT_ADDRESS) === userAddr ||
+           ADMIN_ADDRESSES.includes(userAddr)
   }, [account, gameState.admin])
 
   // --- FETCH DATA ---
@@ -210,6 +221,40 @@ function Admin() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  // --- DOWNLOAD HANDLER ---
+  const handleDownloadLeaderboard = useCallback(async () => {
+    if (!leaderboard || leaderboard.length === 0) {
+      alert('No leaderboard data available to download')
+      return
+    }
+
+    setDownloadLoading(true)
+    try {
+      const seasonId = gameState.currentSeasonId || 1
+      
+      switch (downloadFormat) {
+        case 'csv':
+          downloadLeaderboardCSV(leaderboard, seasonId)
+          break
+        case 'json':
+          downloadLeaderboardJSON(leaderboard, gameState, seasonId)
+          break
+        case 'tsv':
+          downloadLeaderboardTSV(leaderboard, seasonId)
+          break
+        default:
+          downloadLeaderboardCSV(leaderboard, seasonId)
+      }
+      
+      alert(`Leaderboard data exported as ${downloadFormat.toUpperCase()} successfully!`)
+    } catch (error) {
+      console.error('Download error:', error)
+      alert(`Download failed: ${error.message}`)
+    } finally {
+      setDownloadLoading(false)
+    }
+  }, [leaderboard, gameState, downloadFormat])
 
   // --- TRANSACTIONS ---
   const handleTx = async (funName, args = [], desc) => {
@@ -463,6 +508,52 @@ function Admin() {
                     🚨 Withdraw Funds
                 </button>
             </div>
+        </section>
+
+        {/* LEADERBOARD EXPORT SECTION */}
+        <section className="card full-width">
+          <h2 className="section-title">📊 Export Leaderboard Data</h2>
+          <div className="export-section">
+            <div className="export-info">
+              <p>Download all leaderboard data including player addresses in your preferred format.</p>
+              <div className="data-summary">
+                <span><strong>Total Players:</strong> {leaderboard.length}</span>
+                <span><strong>Season:</strong> #{gameState.currentSeasonId}</span>
+                <span><strong>Global XP:</strong> {gameState.totalXp.toLocaleString()}</span>
+              </div>
+            </div>
+            
+            <div className="export-controls">
+              <div className="input-group">
+                <label>Export Format</label>
+                <select value={downloadFormat} onChange={(e) => setDownloadFormat(e.target.value)}>
+                  <option value="csv">CSV (Excel Compatible)</option>
+                  <option value="json">JSON (Structured Data)</option>
+                  <option value="tsv">TSV (Tab-Separated)</option>
+                </select>
+                <small>Choose the format that best suits your needs</small>
+              </div>
+              
+              <button 
+                className="btn-primary full" 
+                onClick={handleDownloadLeaderboard}
+                disabled={downloadLoading || leaderboard.length === 0}
+              >
+                {downloadLoading ? '⏳ Preparing Download...' : '⬇️ Download Leaderboard Data'}
+              </button>
+              
+              <div className="export-details">
+                <h4>What's Included:</h4>
+                <ul>
+                  <li>✓ Player Rank & Wallet Address</li>
+                  <li>✓ XP Points & Tickets</li>
+                  <li>✓ Spins & Winnings (in MOVE)</li>
+                  <li>✓ Staked NFTs Count</li>
+                  <li>✓ Last Activity Date</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ART MANAGEMENT SECTION - BOTTOM */}
