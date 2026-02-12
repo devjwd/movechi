@@ -149,13 +149,37 @@ function Staking() {
             }))
             setStakedNfts(stakedObjs)
 
-            // Calculate lock status for each staked NFT
+            // Get stake timestamps from the UserProfile resource
             const nowSeconds = Math.floor(Date.now() / 1000)
             const lockStatusMap = {}
-            const storedTimestamps = JSON.parse(localStorage.getItem('nft_stake_times') || '{}')
+            
+            // The stake_timestamps is a Table stored in profileData
+            const stakeTimestampsTable = profileData.stake_timestamps || {}
             
             stakedAddrs.forEach(addr => {
-                const stakedAt = storedTimestamps[addr] || nowSeconds // Fallback if not stored
+                // Try to get timestamp from the table data
+                // Table data is usually stored as an object with handle/data structure
+                let stakedAt = nowSeconds
+                
+                // Check if stake_timestamps has the timestamp for this NFT
+                if (stakeTimestampsTable && typeof stakeTimestampsTable === 'object') {
+                    // If it's a direct object mapping
+                    if (stakeTimestampsTable[addr] !== undefined) {
+                        stakedAt = Number(stakeTimestampsTable[addr])
+                    }
+                    // If it has a data property (table structure)
+                    else if (stakeTimestampsTable.data && stakeTimestampsTable.data[addr]) {
+                        stakedAt = Number(stakeTimestampsTable.data[addr])
+                    }
+                    // If it's an array of key-value pairs
+                    else if (Array.isArray(stakeTimestampsTable)) {
+                        const found = stakeTimestampsTable.find(item => item.key === addr || item.key?.value === addr)
+                        if (found) {
+                            stakedAt = Number(found.value)
+                        }
+                    }
+                }
+                
                 const unlockTime = stakedAt + 86400 // 24 hours = 86400 seconds
                 const isLocked = nowSeconds < unlockTime
                 const remainingSeconds = Math.max(0, unlockTime - nowSeconds)
@@ -166,7 +190,10 @@ function Staking() {
                     isLocked,
                     remainingSeconds
                 }
+                
+                console.log(`NFT ${addr}: stakedAt=${stakedAt}, unlockTime=${unlockTime}, remaining=${remainingSeconds}s`)
             })
+            
             setNftLockStatus(lockStatusMap)
 
             // Check Claim Status
