@@ -864,19 +864,11 @@ function App() {
             </div>
             <h2>JACKPOT!</h2>
             <p className="win-amount">{result.displayAmount}</p>
-            {/* Win Card Preview Section */}
-            <div className="win-card-preview-section">
-              <p className="win-card-label">Share Your Win With A Card:</p>
-              <div className="win-card-preview">
-                <img src={generateTwitterShareUrl(result.displayAmount).selectedCard} alt="Win Card" className="win-card-image" />
-              </div>
-              <p className="win-card-hint">A random win card will be attached to your share!</p>
-            </div>
             <div className="result-actions">
               {(() => {
                 const shareData = generateTwitterShareUrl(result.displayAmount)
                 return (
-                  <a className="share-btn" href={shareData.url} target="_blank" rel="noreferrer" title={`Share your ${result.displayAmount} jackpot win with a random win card!`}>
+                  <a className="share-btn" href={shareData.url} target="_blank" rel="noreferrer" title={`Share your ${result.displayAmount} jackpot win`}> 
                     Share on X
                   </a>
                 )

@@ -147,7 +147,7 @@ function Header({ activePage = 'spin' }) {
           <Link to="/staking" className={activePage === 'staking' ? 'active' : ''}>STAKING</Link>
         </div>
         <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-        {connected && (
+        {connected && account?.address && (
           <div 
             className="streak-badge"
             onMouseEnter={() => setShowStreakTooltip(true)}
@@ -201,7 +201,7 @@ function Header({ activePage = 'spin' }) {
             )}
           </div>
         )}
-        {connected ? (
+        {connected && account?.address ? (
           <div className="wallet-dropdown-container">
             <button className="connect-btn connected" onClick={() => setShowWalletDropdown(!showWalletDropdown)}>
               {formatAddress(account?.address)}
@@ -245,7 +245,7 @@ function Header({ activePage = 'spin' }) {
                       <span className="wallet-name">{wallet.name}</span>
                     </button>
                   ))
-              ) : ( <div className="no-wallets"><p>No wallets detected. Install Razor, Nightly, or OKX wallet.</p></div> )}
+              ) : ( <div className="no-wallets"><p>No wallets detected. Install Razor, Nightly, OKX, or Leap wallet.</p></div> )}
             </div>
             <div className="wallet-modal-footer">
               <p className="terms-note">

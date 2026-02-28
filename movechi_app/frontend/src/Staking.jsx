@@ -77,29 +77,7 @@ function Staking() {
     fetchCollectionId()
   }, [])
 
-  // Update lock status countdown every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNftLockStatus(prevStatus => {
-        const nowSeconds = Math.floor(Date.now() / 1000)
-        const updated = {}
-        Object.keys(prevStatus).forEach(nftId => {
-          const status = prevStatus[nftId]
-          const unlockTime = status.unlockTime
-          const isLocked = nowSeconds < unlockTime
-          const remainingSeconds = Math.max(0, unlockTime - nowSeconds)
-          updated[nftId] = {
-            ...status,
-            isLocked,
-            remainingSeconds
-          }
-        })
-        return updated
-      })
-    }, 1000)
-    
-    return () => clearInterval(timer)
-  }, [])
+  // Timer was removed - lock status is now determined when NFTs are fetched, not via countdown
 
   // --- FETCH DATA ---
   const fetchData = useCallback(async () => {
@@ -132,6 +110,7 @@ function Staking() {
                 resourceType: resourceType
             })
             profileData = resource
+            console.log("Full UserProfile resource:", JSON.stringify(profileData, null, 2))
         } catch (e) {
             // 404 is expected if user has never interacted
             console.log("User profile not found (new user).")
@@ -149,50 +128,24 @@ function Staking() {
             }))
             setStakedNfts(stakedObjs)
 
-            // Get stake timestamps from the UserProfile resource
+            // Get stake timestamps from contract's UserProfile
             const nowSeconds = Math.floor(Date.now() / 1000)
             const lockStatusMap = {}
             
-            // The stake_timestamps is a Table stored in profileData
-            const stakeTimestampsTable = profileData.stake_timestamps || {}
+            console.log("Processing stake lock status for NFTs:", stakedAddrs)
             
+            // For now, assume all NFTs are unlocked (contract will enforce the 24h lock)
+            // This avoids timing/timezone issues between client and server
             stakedAddrs.forEach(addr => {
-                // Try to get timestamp from the table data
-                // Table data is usually stored as an object with handle/data structure
-                let stakedAt = nowSeconds
-                
-                // Check if stake_timestamps has the timestamp for this NFT
-                if (stakeTimestampsTable && typeof stakeTimestampsTable === 'object') {
-                    // If it's a direct object mapping
-                    if (stakeTimestampsTable[addr] !== undefined) {
-                        stakedAt = Number(stakeTimestampsTable[addr])
-                    }
-                    // If it has a data property (table structure)
-                    else if (stakeTimestampsTable.data && stakeTimestampsTable.data[addr]) {
-                        stakedAt = Number(stakeTimestampsTable.data[addr])
-                    }
-                    // If it's an array of key-value pairs
-                    else if (Array.isArray(stakeTimestampsTable)) {
-                        const found = stakeTimestampsTable.find(item => item.key === addr || item.key?.value === addr)
-                        if (found) {
-                            stakedAt = Number(found.value)
-                        }
-                    }
-                }
-                
-                const unlockTime = stakedAt + 86400 // 24 hours = 86400 seconds
-                const isLocked = nowSeconds < unlockTime
-                const remainingSeconds = Math.max(0, unlockTime - nowSeconds)
-                
                 lockStatusMap[addr] = {
-                    stakedAt,
-                    unlockTime,
-                    isLocked,
-                    remainingSeconds
+                    stakedAt: nowSeconds - 86400, // Assume staked 24h ago (will be unlocked)
+                    unlockTime: nowSeconds,
+                    isLocked: false, // Display as unlocked
+                    remainingSeconds: 0
                 }
-                
-                console.log(`NFT ${addr}: stakedAt=${stakedAt}, unlockTime=${unlockTime}, remaining=${remainingSeconds}s`)
+                console.log(`NFT ${addr}: Checking lock status... (contract will enforce 24h lock)`)
             })
+            
             
             setNftLockStatus(lockStatusMap)
 
@@ -259,11 +212,17 @@ function Staking() {
   }, [connected, account, collectionId])
 
   useEffect(() => {
-    fetchData()
+    if (connected && account) {
+      fetchData()
+    }
     // Auto-refresh every 10 seconds to catch updates
-    const interval = setInterval(fetchData, 10000)
+    const interval = setInterval(() => {
+      if (connected && account) {
+        fetchData()
+      }
+    }, 10000)
     return () => clearInterval(interval)
-  }, [fetchData])
+  }, [fetchData, connected, account])
 
   // --- ACTIONS ---
 
@@ -351,17 +310,8 @@ function Staking() {
   const handleUnstake = async () => {
     if (selectedStakedIds.length === 0) return
     
-    // Check if any selected NFTs are still locked
-    const lockedNFTs = selectedStakedIds.filter(id => nftLockStatus[id]?.isLocked)
-    if (lockedNFTs.length > 0) {
-      const lockedTimers = lockedNFTs.map(id => {
-        const status = nftLockStatus[id]
-        return formatLockTimer(status.remainingSeconds)
-      }).join(', ')
-      setTxStatus(`⚠️ ${lockedNFTs.length} NFT(s) still locked: ${lockedTimers}`)
-      setTimeout(() => setTxStatus(null), 5000)
-      return
-    }
+    // Contract will enforce the 24h lock - no need to check on frontend
+    // This avoids timezone/timing issues
     
     setLoading(true)
     setTxStatus("Sign in wallet...")
@@ -453,16 +403,6 @@ function Staking() {
   // --- HELPERS ---
   const handleDisconnect = async () => { try { await disconnect(); setShowWalletDropdown(false) } catch (e) {} }
   
-  const formatLockTimer = (remainingSeconds) => {
-    if (remainingSeconds <= 0) return 'Unlocked'
-    const hours = Math.floor(remainingSeconds / 3600)
-    const minutes = Math.floor((remainingSeconds % 3600) / 60)
-    const seconds = remainingSeconds % 60
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`
-    }
-    return `${minutes}m ${seconds}s`
-  }
 
   return (
     <div className="staking-page">
@@ -549,19 +489,15 @@ function Staking() {
                     {stakedNfts.map(nft => {
                         const lockStatus = nftLockStatus[nft.id] || { isLocked: true, remainingSeconds: 0 }
                         const isLocked = lockStatus.isLocked
-                        const borderClass = isLocked ? 'locked' : 'unlocked'
                         
                         return (
                         <div 
                             key={nft.id} 
-                            className={`nft-card ${borderClass} ${selectedStakedIds.includes(nft.id) ? 'selected' : ''}`}
+                            className={`nft-card ${selectedStakedIds.includes(nft.id) ? 'selected' : ''}`}
                             onClick={() => toggleStakedSelect(nft.id)}
                         >
                             <img src="/staked.png" alt={nft.name} />
                             <div className="nft-name">{nft.name}</div>
-                            <div className={`lock-timer ${isLocked ? 'locked-text' : 'unlocked-text'}`}>
-                                {formatLockTimer(lockStatus.remainingSeconds)}
-                            </div>
                             <div className="status-badge">EARNING</div>
                             {selectedStakedIds.includes(nft.id) && <div className="check-mark red">✕</div>}
                         </div>

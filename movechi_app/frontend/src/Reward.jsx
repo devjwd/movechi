@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useWallet } from "@aptos-labs/wallet-adapter-react"
 import { Aptos } from "@aptos-labs/ts-sdk"
 import { getAptosConfig } from './config/network'
-import { getRandomWinCard } from './utils/shareUtils'
 import './Reward.css'
 
 // --- CONFIGURATION ---
@@ -451,8 +450,7 @@ function Reward() {
               <button 
                 className="share-twitter-btn"
                 onClick={() => {
-                  const winCard = getRandomWinCard()
-                  const tweetText = `🎉 Just claimed ${claimedAmount.toFixed(4)} $MOVE on @Movechi_xyz! 🏆🎮\n\n${winCard}\n\nJoin the game and earn rewards:\nmovechi.xyz\n\n#MovechiGaming #Web3`
+                  const tweetText = `🎉 Just claimed ${claimedAmount.toFixed(4)} $MOVE on @Movechi_xyz! 🏆🎮\n\nJoin the game and earn rewards:\nmovechi.xyz`
                   const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`
                   window.open(tweetUrl, '_blank', 'noopener,noreferrer')
                 }}
@@ -526,7 +524,7 @@ function Reward() {
                     </button>
                   ))
               ) : (
-                <p className="no-wallets">No wallets available</p>
+                <p className="no-wallets">No wallets available. Install Razor, Nightly, OKX, or Leap wallet.</p>
               )}
             </div>
             <div className="wallet-terms-container">
