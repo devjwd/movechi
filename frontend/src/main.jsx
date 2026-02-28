@@ -4,6 +4,7 @@ import Preloader from './components/Preloader.jsx'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react"
+import { Analytics } from "@vercel/analytics/react"
 import { getDappConfig } from "./config/network"
 import validateEnvironment from './utils/validateEnv'
 import './index.css'
@@ -58,6 +59,7 @@ createRoot(document.getElementById('root')).render(
       onError={(error) => {}}
     >
       <AppRouter />
+      <Analytics />
     </AptosWalletAdapterProvider>
     </ErrorBoundary>
   </StrictMode>,
