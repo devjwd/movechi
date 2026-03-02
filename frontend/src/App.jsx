@@ -757,14 +757,14 @@ function App() {
                 </div>
                 <div className="seasonal-prize-info">
                   <h3 className="seasonal-prize-title">SEASONAL GRAND PRIZE</h3>
-                  <p className="seasonal-prize-desc">Massive Move Giveaway! We will pick one winner at the end of the season to take the whole pot.</p>
+                  <p className="seasonal-prize-desc">At the conclusion of the season, one winner will be automatically selected to claim the entire prize pool.</p>
                   <div className="seasonal-prize-stats">
                     <div className="seasonal-stat">
                       <div className="seasonal-stat-label">Prize Pool</div>
                       <div className="seasonal-stat-value">{seasonData.poolValue.toLocaleString(undefined, {maximumFractionDigits: 0})} Move</div>
                     </div>
                     <div className="seasonal-stat">
-                      <div className="seasonal-stat-label">Tickets Sold</div>
+                      <div className="seasonal-stat-label">Total Tickets</div>
                       <div className="seasonal-stat-value">{seasonData.ticketsSold.toLocaleString()}</div>
                     </div>
                     <div className="seasonal-stat">
