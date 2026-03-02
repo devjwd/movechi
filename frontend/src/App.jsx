@@ -764,7 +764,7 @@ function App() {
                       <div className="seasonal-stat-value">{seasonData.poolValue.toLocaleString(undefined, {maximumFractionDigits: 0})} Move</div>
                     </div>
                     <div className="seasonal-stat">
-                      <div className="seasonal-stat-label">Total Tickets</div>
+                      <div className="seasonal-stat-label">All Tickets</div>
                       <div className="seasonal-stat-value">{seasonData.ticketsSold.toLocaleString()}</div>
                     </div>
                     <div className="seasonal-stat">
