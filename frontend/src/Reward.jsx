@@ -348,16 +348,13 @@ function Reward() {
       case 'spins':
         return (
           <div className="step-container fade-in">
-            <div className="stat-showcase">
-              <img src="/movechi6.png" alt="Total Spins" className="showcase-icon spins-icon" />
-              <div className="showcase-value">{userTickets.toLocaleString()}</div>
-              <div className="showcase-label">Total Spins</div>
+            <div className="stat-showcase quote-showcase">
+              <img src="/movechi6.png" alt="Movechi Quote" className="showcase-icon spins-icon" />
+              <p className="showcase-quote">"Every spin writes your story in the season."</p>
+              <div className="showcase-label">Movechi Loves you </div>
             </div>
             <p className="step-text highlight">
-              You spun the wheel <strong>{userTickets.toLocaleString()}</strong> times!
-              {userLifetimeWins > 0 && (
-                <><br/>And won <strong>{userLifetimeWins.toFixed(2)} MOVE</strong> from jackpots 💰</>
-              )}
+              "Keep playing with patience, and rewards will follow."
             </p>
             <button className="primary-btn" onClick={nextStep}>
               Next
