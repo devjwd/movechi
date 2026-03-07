@@ -474,6 +474,48 @@
   z-index: 1;
 }
 
+.claim-countdown {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto 1.4rem auto;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 169, 97, 0.28);
+  background: rgba(201, 169, 97, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.claim-countdown.expired {
+  border-color: rgba(139, 58, 58, 0.4);
+  background: rgba(139, 58, 58, 0.12);
+}
+
+.countdown-label {
+  font-size: 0.78rem;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.countdown-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.claim-countdown.expired .countdown-value {
+  color: #d97a7a;
+}
+
+.countdown-deadline {
+  font-size: 0.76rem;
+  color: rgba(232, 220, 200, 0.72);
+}
+
 /* --- CLAIM BUTTON --- */
 .claim-btn-large {
   display: flex;
@@ -1023,6 +1065,19 @@
   .claim-locked-msg {
     padding: 1rem;
     font-size: 0.85rem;
+  }
+
+  .claim-countdown {
+    max-width: 100%;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .countdown-value {
+    font-size: 1.05rem;
+  }
+
+  .countdown-deadline {
+    font-size: 0.72rem;
   }
 
   .wallet-modal-content {
