@@ -549,8 +549,15 @@ function App() {
   }
 
   const handleSpin = async () => {
+    const isSeasonEnded = seasonData.end > 0 && Math.floor(Date.now() / 1000) >= seasonData.end
+
     if (isSpinning || !connected) {
         return
+    }
+    if (isSeasonEnded) {
+      setWinMessage("Season ended")
+      setTimeout(() => setWinMessage(null), 3000)
+      return
     }
     if (!seasonData.active) {
         setWinMessage("Season not active yet 🛑")
@@ -671,9 +678,12 @@ function App() {
 
   // --- RENDER HELPERS ---
   const getStatusContent = () => {
+    const isSeasonEnded = seasonData.end > 0 && Math.floor(Date.now() / 1000) >= seasonData.end
+
     if (txStatus) return <span className="status-pulse">{txStatus}</span>
     if (winMessage) return <span className="status-highlight">{winMessage}</span>
     if (!connected) return <span>Connect Wallet to Play</span>
+    if (isSeasonEnded) return <span className="status-error">Season ended</span>
     if (seasonData.paused) return <span className="status-error">Game paused by admin</span>
     if (!seasonData.active) return <span className="status-error">Season not active</span>
 
@@ -818,6 +828,7 @@ function App() {
                   })}
                 </div>
                 {(() => {
+                  const isSeasonEnded = seasonData.end > 0 && Math.floor(Date.now() / 1000) >= seasonData.end
                   const stakedCount = Number(userStats?.stakedCount || 0)
                   const usedPaid = Number(userStats?.paidSpinsToday || 0)
                   const usedFree = Number(userStats?.freeSpinsToday || 0)
@@ -825,11 +836,11 @@ function App() {
                   const allowedFree = stakedCount >= 10 ? 3 : (stakedCount >= 5 ? 2 : (stakedCount >= 1 ? 1 : 0))
                   const remainingPaid = Math.max(0, maxPaid - usedPaid)
                   const remainingFree = Math.max(0, allowedFree - usedFree)
-                  const canSpinNow = (remainingPaid > 0 || remainingFree > 0) && !isSpinning && connected && seasonData.active
-                  const isDisabled = isSpinning || !connected || (remainingPaid === 0 && remainingFree === 0) || !seasonData.active
+                  const canSpinNow = (remainingPaid > 0 || remainingFree > 0) && !isSpinning && connected && seasonData.active && !isSeasonEnded
+                  const isDisabled = isSpinning || !connected || (remainingPaid === 0 && remainingFree === 0) || !seasonData.active || isSeasonEnded
                   
                   return (
-                    <div className={`wheel-center ${canSpinNow ? 'can-spin' : ''}`} onClick={handleSpin} style={{ cursor: isDisabled ? 'not-allowed' : 'pointer', opacity: !seasonData.active ? 0.5 : 1 }}>
+                    <div className={`wheel-center ${canSpinNow ? 'can-spin' : ''}`} onClick={handleSpin} style={{ cursor: isDisabled ? 'not-allowed' : 'pointer', opacity: (!seasonData.active || isSeasonEnded) ? 0.5 : 1 }}>
                       <span>{isSpinning ? "..." : (connected ? "SPIN" : "CONNECT")}</span>
                     </div>
                   )
