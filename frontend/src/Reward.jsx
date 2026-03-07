@@ -8,6 +8,27 @@ import './Reward.css'
 const aptosClient = new Aptos(getAptosConfig())
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0xfb232241c37c2006ccfd2d36a0ac18f8baff7fa06a3336ba88cfebcfc7a54ac3" 
 const MODULE_NAME = import.meta.env.VITE_MODULE_NAME || "main"
+const CLAIM_DEADLINE = new Date(2026, 2, 15, 13, 40, 30)
+
+const getRemainingClaimTime = () => {
+  const remaining = CLAIM_DEADLINE.getTime() - Date.now()
+  return remaining > 0 ? remaining : 0
+}
+
+const formatCountdown = (milliseconds) => {
+  const totalSeconds = Math.floor(milliseconds / 1000)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  return {
+    days,
+    hours: String(hours).padStart(2, '0'),
+    minutes: String(minutes).padStart(2, '0'),
+    seconds: String(seconds).padStart(2, '0')
+  }
+}
 
 function Reward() {
   const { connected, account, signAndSubmitTransaction, disconnect, connect, wallets } = useWallet()
@@ -39,6 +60,10 @@ function Reward() {
   const [userPercentile, setUserPercentile] = useState(0)
   const [hasReward, setHasReward] = useState(false)
   const [hasAlreadyClaimed, setHasAlreadyClaimed] = useState(false)
+  const [remainingClaimTime, setRemainingClaimTime] = useState(getRemainingClaimTime)
+
+  const isClaimDeadlineReached = remainingClaimTime <= 0
+  const countdown = formatCountdown(remainingClaimTime)
 
   // Check localStorage for claimed status on mount
   useEffect(() => {
@@ -163,6 +188,15 @@ function Reward() {
       return false
     }
   }, [connected, account])
+
+  // Keep claim countdown in sync every second.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRemainingClaimTime(getRemainingClaimTime())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
 
   // When wallet connects, start loading and check rewards
   useEffect(() => {
@@ -392,8 +426,22 @@ function Reward() {
               </div>
               <div className="reward-label">Your Reward</div>
             </div>
+
+            <div className={`claim-countdown ${isClaimDeadlineReached ? 'expired' : ''}`}>
+              <div className="countdown-label">Claim Period Ends In</div>
+              {!isClaimDeadlineReached ? (
+                <div className="countdown-value">
+                  {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
+                </div>
+              ) : (
+                <div className="countdown-value">00d 00h 00m 00s</div>
+              )}
+              <div className="countdown-deadline">
+                Deadline: {CLAIM_DEADLINE.toLocaleString()}
+              </div>
+            </div>
             
-            {isClaimWindowActive ? (
+            {isClaimWindowActive && !isClaimDeadlineReached ? (
               <>
                 <button 
                   className="claim-btn-large" 
@@ -415,6 +463,11 @@ function Reward() {
                   <div className="error-msg">{claimMessage}</div>
                 )}
               </>
+            ) : isClaimDeadlineReached ? (
+              <div className="claim-locked-msg">
+                <span className="lock-icon">⏱</span>
+                Claim period has ended.
+              </div>
             ) : (
               <div className="claim-locked-msg">
                 <span className="lock-icon">🔒</span>
