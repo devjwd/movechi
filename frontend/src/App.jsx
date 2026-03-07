@@ -68,7 +68,9 @@ function App() {
       poolValue: 0,
       globalXP: 0,
       seasonId: 0,
-      maxPaidDaily: 0
+      maxPaidDaily: 0,
+      lastSeasonWinner: '',
+      lastSeasonPayout: 0
     })
   
   const wheelRef = useRef(null)
@@ -212,7 +214,9 @@ function App() {
         poolValue,
         globalXP,
         seasonId,
-        maxPaidDaily: Number(data.config?.max_paid_spins_daily || 0)
+        maxPaidDaily: Number(data.config?.max_paid_spins_daily || 0),
+        lastSeasonWinner: normalizeAddress(data.last_season_winner || '0x0'),
+        lastSeasonPayout: Number(data.last_season_payout || 0) / 100000000
       })
       logger.debug('Global stats updated:', { active: !!data.season_started, paused: !!data.paused, poolValue, globalXP })
     } catch (error) {
@@ -716,6 +720,9 @@ function App() {
   }
 
   const formatAddress = (address) => address ? `${address.toString().slice(0, 6)}...${address.toString().slice(-4)}` : ''
+  const hasLastSeasonWinner = seasonData.lastSeasonWinner && seasonData.lastSeasonWinner !== '0x0'
+  const lastSeasonTxUrl = 'https://explorer.movementnetwork.xyz/txn/90753881?network=mainnet'
+  const lastSeasonTxLabel = 'View Transaction'
   const formatTime = (num) => String(num).padStart(2, '0')
   const formatTimeAgo = (timestamp) => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000)
@@ -768,19 +775,33 @@ function App() {
                 <div className="seasonal-prize-info">
                   <h3 className="seasonal-prize-title">SEASONAL GRAND PRIZE</h3>
                   <p className="seasonal-prize-desc">At the conclusion of the season, one winner will be automatically selected to claim the entire prize pool.</p>
+                  <div className="seasonal-last-result-title">Last Season Result</div>
                   <div className="seasonal-prize-stats">
                     <div className="seasonal-stat">
-                      <div className="seasonal-stat-label">Prize Pool</div>
-                      <div className="seasonal-stat-value">{seasonData.poolValue.toLocaleString(undefined, {maximumFractionDigits: 0})} Move</div>
+                      <div className="seasonal-stat-label">Amount</div>
+                      <div className="seasonal-stat-value">
+                        {seasonData.lastSeasonPayout > 0
+                          ? `${seasonData.lastSeasonPayout.toLocaleString(undefined, { maximumFractionDigits: 2 })} Move`
+                          : '--'}
+                      </div>
                     </div>
                     <div className="seasonal-stat">
-                      <div className="seasonal-stat-label">All Tickets</div>
-                      <div className="seasonal-stat-value">{seasonData.ticketsSold.toLocaleString()}</div>
+                      <div className="seasonal-stat-label">Winner</div>
+                      <div className="seasonal-stat-value seasonal-stat-value-address">
+                        {hasLastSeasonWinner ? formatAddress(seasonData.lastSeasonWinner) : '--'}
+                      </div>
                     </div>
-                    <div className="seasonal-stat">
-                      <div className="seasonal-stat-label">Your Tickets</div>
-                      <div className="seasonal-stat-value">{userStats.tickets}</div>
-                    </div>
+                  </div>
+                  <div className="seasonal-result-tx">
+                    <span className="seasonal-result-tx-label">Transaction</span>
+                    <a
+                      className="seasonal-result-tx-link"
+                      href={lastSeasonTxUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {lastSeasonTxLabel}
+                    </a>
                   </div>
                 </div>
               </div>
